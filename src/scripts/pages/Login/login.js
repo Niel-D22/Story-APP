@@ -25,7 +25,7 @@ const Login = {
             <button type="submit" class="btn-login">Masuk</button>
           </form>
           <p class="signup-text">
-            Belum punya akun? <a href="#">Daftar</a>
+            Belum punya akun? <a href="#/register">Daftar</a>
           </p>
         </div>
       </div>

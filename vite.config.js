@@ -1,26 +1,27 @@
-import { defineConfig } from "vite";
-import { resolve } from "path";
-import { VitePWA } from "vite-plugin-pwa";
+import { defineConfig } from 'vite';
+import { resolve } from 'path';
+import { VitePWA } from 'vite-plugin-pwa'; // Pastikan Anda sudah menginstalnya
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  root: resolve(__dirname, "src"),
-  publicDir: resolve(__dirname, "src", "public"),
+  root: resolve(__dirname, 'src'),
+  publicDir: resolve(__dirname, 'src', 'public'),
   build: {
-    outDir: resolve(__dirname, "dist"),
+    outDir: resolve(__dirname, 'dist'),
     emptyOutDir: true,
   },
   resolve: {
     alias: {
-      "@": resolve(__dirname, "src"),
+      '@': resolve(__dirname, 'src'),
     },
   },
+
   server: {
     host: true,
     port: 5173,
     hmr: {
-    protocol: "ws",
-     host: "localhost",
+      protocol: 'ws',
+      host: 'localhost',
       clientPort: 5173,
       overlay: true,
     },
@@ -28,72 +29,75 @@ export default defineConfig({
 
   plugins: [
     VitePWA({
-      // ▼▼▼ UBAHAN PENTING ▼▼▼
-      // 1. Ubah strategi ke 'injectManifest'
-      strategy: "injectManifest",
-
-      // 2. Tentukan di mana file sw.js manual Anda berada
-      srcDir: resolve(__dirname, "src", "public"),
-      filename: "sw.js",
-      // ▲▲▲ SELESAI ▲▲▲
-
-      // Biarkan konfigurasi manifest ini. Ini sudah benar untuk Kriteria 3.
+      // 1. Strategi untuk menggunakan sw.js manual
+      strategy: 'injectManifest',
+      srcDir: resolve(__dirname, 'src', 'public'),
+      filename: 'sw.js',
+      
+      // 2. Konfigurasi Manifest (INI BAGIAN PENTING)
+      // Kode JSON Anda ditaruh di sini:
       manifest: {
-        name: "Story Map - Share Your Stories",
-        short_name: "Story Map",
-        description: "Bagikan kisahmu lewat peta interaktif...",
-        theme_color: "#667eea",
-        background_color: "#ffffff",
-        display: "standalone",
-        scope: "/",
-        start_url: "/",
-        orientation: "portrait-primary",
+        name: "StoryMap-app",
+        short_name: "App",
+        // ▼▼▼ DAFTAR IKON INI SUDAH BENAR ▼▼▼
         icons: [
           {
-            src: "/icons/icon-72x72.svg",
-            sizes: "72x72",
-            type: "image/svg+xml",
+            "src": "icons/icon-48x48.png",
+            "sizes": "48x48",
+            "type": "image/png"
           },
           {
-            src: "/icons/icon-96x96.svg",
-            sizes: "96x96",
-            type: "image/svg+xml",
+            "src": "icons/icon-72x72.png",
+            "sizes": "72x72",
+            "type": "image/png"
           },
           {
-            src: "/icons/icon-128x128.svg",
-            sizes: "128x128",
-            type: "image/svg+xml",
+            "src": "icons/icon-96x96.png",
+            "sizes": "96x96",
+            "type": "image/png"
           },
           {
-            src: "/icons/icon-144x144.svg",
-            sizes: "144x144",
-            type: "image/svg+xml",
+            "src": "icons/icon-128x128.png",
+            "sizes": "128x128",
+            "type": "image/png"
           },
           {
-            src: "/icons/icon-152x152.svg",
-            sizes: "152x152",
-            type: "image/svg+xml",
+            "src": "icons/icon-144x144.png",
+            "sizes": "144x144",
+            "type": "image/png"
           },
           {
-            src: "/icons/icon-192x192.png",
-            sizes: "192x192",
-            type: "image/png",
+            "src": "icons/icon-152x152.png",
+            "sizes": "152x152",
+            "type": "image/png"
           },
           {
-            src: "/icons/icon-384x384.svg",
-            sizes: "384x384",
-            type: "image/svg+xml",
+            "src": "icons/icon-192x192.png",
+            "sizes": "192x192",
+            "type": "image/png"
           },
           {
-            src: "/icons/icon-512x512.png",
-            sizes: "512x512",
-            type: "image/png",
+            "src": "icons/icon-256x256.png",
+            "sizes": "256x256",
+            "type": "image/png"
           },
+          {
+            "src": "icons/icon-384x384.png",
+            "sizes": "384x384",
+            "type": "image/png"
+          },
+          {
+            "src": "icons/icon-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+          }
         ],
-      },
-
-      // Blok 'workbox' dihapus dari sini karena akan kita definisikan
-      // di dalam file sw.js manual
+        // ▲▲▲ TIDAK ADA 'screenshots' ATAU 'shortcuts' YANG MEMBUAT ERROR ▲▲▲
+        start_url: "/",
+        display: "standalone",
+        background_color: "#ffffff",
+        theme_color: "#000000"
+      }
     }),
   ],
 });
