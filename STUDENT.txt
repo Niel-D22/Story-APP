@@ -1,3 +1,5 @@
 APP_URL=<url_aplikasi>
 
 MAP_SERVICE_API_KEY=eEKxAVzUA41UwhWFTWVB
+link deploy:
+https://storymap-appdw.netlify.app/
