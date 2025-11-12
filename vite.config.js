@@ -2,7 +2,7 @@ import { defineConfig } from 'vite';
 import { resolve } from 'path';
 import { VitePWA } from 'vite-plugin-pwa'; // Pastikan Anda sudah menginstalnya
 
-// https://vitejs.dev/config/
+
 export default defineConfig({
   root: resolve(__dirname, 'src'),
   publicDir: resolve(__dirname, 'src', 'public'),
@@ -29,13 +29,12 @@ export default defineConfig({
 
   plugins: [
     VitePWA({
-      // 1. Strategi untuk menggunakan sw.js manual
+    
       strategy: 'injectManifest',
       srcDir: resolve(__dirname, 'src', 'public'),
       filename: 'sw.js',
       
-      // 2. Konfigurasi Manifest (INI BAGIAN PENTING)
-      // Kode JSON Anda ditaruh di sini:
+     
       manifest: {
         name: "StoryMap-app",
         short_name: "App",
@@ -92,7 +91,7 @@ export default defineConfig({
             "type": "image/png"
           }
         ],
-        // ▲▲▲ TIDAK ADA 'screenshots' ATAU 'shortcuts' YANG MEMBUAT ERROR ▲▲▲
+
         start_url: "/",
         display: "standalone",
         background_color: "#ffffff",
