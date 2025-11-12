@@ -26,8 +26,20 @@ L.Icon.Default.mergeOptions({
   iconUrl: markerIcon,
   shadowUrl: markerShadow,
 });
-// ▲▲▲ SAMPAI DI SINI ▲▲▲
+
 
 document.addEventListener("DOMContentLoaded", async () => {
-  // ... (sisa kode Anda)
+  // BUAT APLIKASI
+  const app = new App({
+    content: document.querySelector("#main-content"),
+    drawerButton: document.querySelector("#drawer-button"),
+    navigationDrawer: document.querySelector("#navigation-drawer"),
+  });
+  
+  await app.renderPage();
+
+  // Tambahkan listener agar halaman berubah saat hash berubah
+  window.addEventListener("hashchange", async () => {
+    await app.renderPage();
+  });
 });
