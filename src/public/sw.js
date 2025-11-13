@@ -11,9 +11,9 @@ import { ExpirationPlugin } from 'workbox-expiration';
 self.skipWaiting();
 cleanupOutdatedCaches();
 
-
 precacheAndRoute(self.__WB_MANIFEST);
 
+// --- Kriteria 3: Caching untuk API (Mode Offline) ---
 registerRoute(
   // Cache request ke API Dicoding
   ({ url }) => url.origin === 'https://story-api.dicoding.dev',
@@ -21,6 +21,15 @@ registerRoute(
   new NetworkFirst({
     cacheName: 'story-map-api-cache',
     plugins: [
+      // ▼▼▼ PERBAIKAN: Hanya cache request GET ▼▼▼
+      {
+        cacheWillUpdate: async ({ request, response, event, state }) => {
+          if (request.method !== 'GET') {
+            return null; // Jangan cache request POST, PUT, dll.
+          }
+          return response; // Lanjutkan cache untuk GET
+        },
+      },
       new CacheableResponsePlugin({
         statuses: [0, 200], // 0 untuk opaque responses (CORS)
       }),
@@ -32,6 +41,7 @@ registerRoute(
   })
 );
 
+// --- Kriteria 2: Handler Push Notification ---
 self.addEventListener('push', (event) => {
   console.log('[SW] Push notification received');
 
@@ -42,26 +52,27 @@ self.addEventListener('push', (event) => {
     data: { url: '/#/home' },
   };
 
-  // Ambil data dari push event jika ada
-  if (event.data) {
-    try {
+  // ▼▼▼ PERBAIKAN: Tambahkan try...catch untuk JSON parse ▼▼▼
+  try {
+    // Coba baca data sebagai JSON
+    if (event.data) {
       const payload = event.data.json();
-      notificationData = {
-        title: payload.title || notificationData.title,
-        body: payload.body || 'Ada cerita baru',
-        icon: payload.icon || '/icons/icon-192x192.png',
-        data: {
-          url: payload.url || '/#/home',
-        },
-        actions: [
-          { action: 'open', title: 'Buka Cerita' },
-          { action: 'close', title: 'Tutup' },
-        ],
-      };
-    } catch (e) {
-      console.error('[SW] Error parsing push data:', e);
+      notificationData.title = payload.title || notificationData.title;
+      notificationData.body = payload.body || 'Ada cerita baru';
+      notificationData.icon = payload.icon || '/icons/icon-192x192.png';
+      notificationData.data = { url: payload.url || '/#/home' };
+      notificationData.actions = [
+        { action: 'open', title: 'Buka Cerita' },
+        { action: 'close', title: 'Tutup' },
+      ];
     }
+  } catch (e) {
+    // JIKA GAGAL (karena menerima TEKS, bukan JSON):
+    // Ambil data sebagai teks biasa dan gunakan sebagai 'body'
+    console.warn('[SW] Push data was not JSON, treating as text.');
+    notificationData.body = event.data.text();
   }
+  // ▲▲▲ SELESAI PERBAIKAN ▲▲▲
 
   event.waitUntil(
     self.registration.showNotification(notificationData.title, {

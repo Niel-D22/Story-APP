@@ -64,7 +64,7 @@ class PushNotification {
       console.log('[Push] Subscription created:', subscription);
 
       // Kirim subscription ke server (opsional untuk custom implementation)
-      // await this.sendSubscriptionToServer(subscription);
+      await this.sendSubscriptionToServer(subscription);
 
       return subscription;
     } catch (error) {

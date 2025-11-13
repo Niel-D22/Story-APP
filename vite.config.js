@@ -2,7 +2,6 @@ import { defineConfig } from 'vite';
 import { resolve } from 'path';
 import { VitePWA } from 'vite-plugin-pwa'; // Pastikan Anda sudah menginstalnya
 
-
 export default defineConfig({
   root: resolve(__dirname, 'src'),
   publicDir: resolve(__dirname, 'src', 'public'),
@@ -29,16 +28,17 @@ export default defineConfig({
 
   plugins: [
     VitePWA({
-    
+      
+      // ▼▼▼ PERBAIKAN: 'strategies' diubah menjadi 'strategy' ▼▼▼
       strategy: 'injectManifest',
       srcDir: resolve(__dirname, 'src', 'public'),
       filename: 'sw.js',
       
-     
+      
       manifest: {
         name: "StoryMap-app",
         short_name: "App",
-        // ▼▼▼ DAFTAR IKON INI SUDAH BENAR ▼▼▼
+        
         icons: [
           {
             "src": "icons/icon-48x48.png",
