@@ -1,37 +1,36 @@
-// File: src/public/sw.js
-import { precacheAndRoute, cleanupOutdatedCaches } from "workbox-precaching";
-import { registerRoute } from "workbox-routing";
-import { NetworkFirst } from "workbox-strategies";
-import { CacheableResponsePlugin } from "workbox-cacheable-response";
-import { ExpirationPlugin } from "workbox-expiration";
+// --- LOAD WORKBOX ---
+importScripts(
+  "https://storage.googleapis.com/workbox-cdn/releases/6.6.0/workbox-sw.js"
+);
+
+const { precaching, routing, strategies, cacheableResponse, expiration } = workbox;
+const { precacheAndRoute, cleanupOutdatedCaches } = precaching;
+const { registerRoute } = routing;
+const { NetworkFirst } = strategies;
+const { CacheableResponsePlugin } = cacheableResponse;
+const { ExpirationPlugin } = expiration;
 
 // --- INISIALISASI DASAR ---
 self.skipWaiting();
 self.addEventListener("activate", () => self.clients.claim());
 cleanupOutdatedCaches();
 
-// --- PRECACHE SEMUA FILE YANG DIGENERATE OLEH VITE ---
+// --- PRECACHE SEMUA FILE BUILD ---
 precacheAndRoute(self.__WB_MANIFEST || []);
 
-// --- CEGAH CACHE UNTUK REQUEST SELAIN GET ---
+// --- CEGAH CACHE REQUEST NON-GET ---
 self.addEventListener("fetch", (event) => {
-  if (event.request.method !== "GET") {
-    // Jangan biarkan Workbox coba cache POST/PUT/DELETE
-    return;
-  }
+  if (event.request.method !== "GET") return;
 });
 
-// --- CACHING UNTUK API DICODING ---
+// --- CACHING UNTUK API STORY DICODING ---
 registerRoute(
   ({ url, request }) =>
     url.origin === "https://story-api.dicoding.dev" && request.method === "GET",
-
   new NetworkFirst({
     cacheName: "story-map-api-cache",
     plugins: [
-      new CacheableResponsePlugin({
-        statuses: [0, 200],
-      }),
+      new CacheableResponsePlugin({ statuses: [0, 200] }),
       new ExpirationPlugin({
         maxEntries: 60,
         maxAgeSeconds: 30 * 24 * 60 * 60, // 30 hari
@@ -41,23 +40,18 @@ registerRoute(
   })
 );
 
-// --- HANDLER PUSH NOTIFICATION ---
+// --- PUSH NOTIFICATION HANDLER ---
 self.addEventListener("push", (event) => {
- console.log('[SW] Push received:', event.data ? event.data.text() : 'no data');
+  console.log("[SW] Push received:", event.data ? event.data.text() : "no data");
 
-  let data = {
-    title: "Story App",
-    body: "Ada notifikasi baru dari Story App!",
-  };
+  let data = { title: "Story App", body: "Ada notifikasi baru dari Story App!" };
 
   if (event.data) {
     try {
-      // coba baca JSON
       const jsonData = event.data.json();
       data.title = jsonData.title || data.title;
-      data.body = jsonData.options?.body || data.body;
-    } catch (e) {
-      // kalau gagal JSON, ambil teks biasa
+      data.body = jsonData.body || jsonData.options?.body || data.body;
+    } catch (err) {
       const textData = event.data.text();
       console.warn("[SW] Push data was plain text:", textData);
       data.body = textData;
@@ -69,32 +63,30 @@ self.addEventListener("push", (event) => {
     icon: "/icons/icon-192x192.png",
     badge: "/icons/icon-192x192.png",
     vibrate: [200, 100, 200],
+    data: {
+      url: "/#/home",
+    },
   };
 
-  event.waitUntil(self.registration.showNotification(data.title, options));
+  event.waitUntil(
+    self.registration.showNotification(data.title, options)
+  );
 });
 
-// --- HANDLER KLIK NOTIFIKASI ---
+// --- HANDLE KLIK NOTIFIKASI ---
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
 
-  if (event.action === "close") return;
-
-  const urlToOpen = event.notification.data?.url || "/#/home";
-
   event.waitUntil(
-    clients
-      .matchAll({ type: "window", includeUncontrolled: true })
-      .then((clientList) => {
-        for (const client of clientList) {
-          if (client.url.includes(urlToOpen) && "focus" in client) {
-            return client.focus();
-          }
+    clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList) => {
+      for (const client of clientList) {
+        if (client.url.includes("/#/home") && "focus" in client) {
+          return client.focus();
         }
-        if (clients.openWindow) return clients.openWindow(urlToOpen);
-      })
+      }
+      if (clients.openWindow) {
+        return clients.openWindow("/#/home");
+      }
+    })
   );
-
-  navigator.serviceWorker.register('/sw.js?v=' + Date.now());
-
 });

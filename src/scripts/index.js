@@ -14,10 +14,17 @@ L.Icon.Default.mergeOptions({
   iconUrl: markerIcon,
   shadowUrl: markerShadow,
 });
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register("/sw.js")
+    .then(() => console.log('[SW] Registered'))
+    .catch(err => console.error('[SW] Register failed:', err));
+}
+
 
 
 document.addEventListener("DOMContentLoaded", async () => {
   // BUAT APLIKASI
+  
   const app = new App({
     content: document.querySelector("#main-content"),
     drawerButton: document.querySelector("#drawer-button"),
