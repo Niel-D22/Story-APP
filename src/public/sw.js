@@ -3,7 +3,8 @@ importScripts(
   "https://storage.googleapis.com/workbox-cdn/releases/6.6.0/workbox-sw.js"
 );
 
-const { precaching, routing, strategies, cacheableResponse, expiration } = workbox;
+const { precaching, routing, strategies, cacheableResponse, expiration } =
+  workbox;
 const { precacheAndRoute, cleanupOutdatedCaches } = precaching;
 const { registerRoute } = routing;
 const { NetworkFirst } = strategies;
@@ -42,9 +43,15 @@ registerRoute(
 
 // --- PUSH NOTIFICATION HANDLER ---
 self.addEventListener("push", (event) => {
-  console.log("[SW] Push received:", event.data ? event.data.text() : "no data");
+  console.log(
+    "[SW] Push received:",
+    event.data ? event.data.text() : "no data"
+  );
 
-  let data = { title: "Story App", body: "Ada notifikasi baru dari Story App!" };
+  let data = {
+    title: "Story App",
+    body: "Ada notifikasi baru dari Story App!",
+  };
 
   if (event.data) {
     try {
@@ -68,9 +75,7 @@ self.addEventListener("push", (event) => {
     },
   };
 
-  event.waitUntil(
-    self.registration.showNotification(data.title, options)
-  );
+  event.waitUntil(self.registration.showNotification(data.title, options));
 });
 
 // --- HANDLE KLIK NOTIFIKASI ---
@@ -78,15 +83,17 @@ self.addEventListener("notificationclick", (event) => {
   event.notification.close();
 
   event.waitUntil(
-    clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList) => {
-      for (const client of clientList) {
-        if (client.url.includes("/#/home") && "focus" in client) {
-          return client.focus();
+    clients
+      .matchAll({ type: "window", includeUncontrolled: true })
+      .then((clientList) => {
+        for (const client of clientList) {
+          if (client.url.includes("/#/home") && "focus" in client) {
+            return client.focus();
+          }
         }
-      }
-      if (clients.openWindow) {
-        return clients.openWindow("/#/home");
-      }
-    })
+        if (clients.openWindow) {
+          return clients.openWindow(event.notification.data?.url || "/#/home");
+        }
+      })
   );
 });

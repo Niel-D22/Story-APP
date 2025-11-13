@@ -19,6 +19,13 @@ if ('serviceWorker' in navigator) {
     .then(() => console.log('[SW] Registered'))
     .catch(err => console.error('[SW] Register failed:', err));
 }
+navigator.serviceWorker.ready.then((reg) => {
+  reg.showNotification("Story Baru!", {
+    body: "Klik untuk lihat",
+    data: { url: "/#/home" },
+    icon: "/icons/icon-192x192.png",
+  });
+});
 
 
 

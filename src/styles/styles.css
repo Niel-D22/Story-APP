@@ -1,5 +1,12 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap");
 
+#mapSelectLocation {
+  height: 400px; /* jangan pakai min() atau vh dulu */
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+  border: 2px solid #ddd;
+}
+
 /* === RESET & GLOBAL === */
 * {
   margin: 0;
