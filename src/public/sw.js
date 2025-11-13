@@ -1,13 +1,11 @@
 // File: src/public/sw.js
-// ✅ PERBAIKAN: Gunakan importScripts untuk Workbox (bukan ES6 import)
+// ✅ PERBAIKAN: Import Workbox dari node_modules (bukan CDN)
 
-importScripts('https://storage.googleapis.com/workbox-cdn/releases/7.0.0/workbox-sw.js');
-
-const { precacheAndRoute, cleanupOutdatedCaches } = workbox.precaching;
-const { registerRoute } = workbox.routing;
-const { NetworkFirst } = workbox.strategies;
-const { CacheableResponsePlugin } = workbox.cacheableResponse;
-const { ExpirationPlugin } = workbox.expiration;
+import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching';
+import { registerRoute } from 'workbox-routing';
+import { NetworkFirst } from 'workbox-strategies';
+import { CacheableResponsePlugin } from 'workbox-cacheable-response';
+import { ExpirationPlugin } from 'workbox-expiration';
 
 // --- Kriteria 3: Caching Aset (Otomatis oleh InjectManifest) ---
 self.skipWaiting();
