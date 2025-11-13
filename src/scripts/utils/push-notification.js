@@ -118,6 +118,9 @@ class PushNotification {
       throw new Error('User not authenticated');
     }
 
+    const subscriptionToSend = subscription.toJSON();
+    delete subscriptionToSend.expirationTime;
+
     try {
       // ✅ PERBAIKAN: Gunakan endpoint yang benar sesuai dokumentasi Dicoding
       const response = await fetch(`${CONFIG.BASE_URL}/notifications/subscribe`, {
@@ -126,7 +129,7 @@ class PushNotification {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${currentUser.token}`,
         },
-        body: JSON.stringify(subscription),
+      body: JSON.stringify(subscriptionToSend),
       });
 
       if (!response.ok) {
