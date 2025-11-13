@@ -689,6 +689,25 @@ const AddStory = {
     }
     setTimeout(() => (window.location.hash = "#/home"), 500);
   },
+
+  // Fungsi kirim notifikasi lokal
+sendPushNotification(title, body) {
+  if ('serviceWorker' in navigator && 'PushManager' in window) {
+    navigator.serviceWorker.ready.then((registration) => {
+      registration.showNotification(title, {
+        body,
+        icon: '/icons/icon-192x192.png', // sesuaikan dengan ikon kamu
+        vibrate: [100, 50, 100],
+        tag: 'story-added',
+      });
+    });
+  } else {
+    console.log('Push not supported');
+  }
+}
+
 };
+
+
 
 export default AddStory;
