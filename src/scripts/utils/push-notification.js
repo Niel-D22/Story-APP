@@ -50,6 +50,7 @@ class PushNotification {
       // Cek apakah sudah subscribe
       let subscription = await this.registration.pushManager.getSubscription();
 
+
       // Jika belum, buat subscription baru
       if (!subscription) {
         const vapidKey = this.urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
@@ -111,41 +112,44 @@ class PushNotification {
     }
   }
 
-  // ✅ PERBAIKAN: Kirim subscription ke server dengan endpoint yang benar
   async sendSubscriptionToServer(subscription) {
-    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-    if (!currentUser?.token) {
-      throw new Error('User not authenticated');
+  console.log('[Push] Sending subscription to server...');
+
+  try {
+    const token = localStorage.getItem("accessToken");
+
+    if (!token) throw new Error("No token found");
+
+    // ubah subscription ke object biasa
+    const plainSub = subscription.toJSON();
+
+    // hapus field yang tidak diterima server Dicoding
+    delete plainSub.expirationTime;
+
+    const response = await fetch('https://story-api.dicoding.dev/v1/notifications/subscribe', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(plainSub),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      console.error('[Push] Server subscription failed:', result);
+      throw new Error(result.message || 'Failed to subscribe');
     }
 
-    const subscriptionToSend = subscription.toJSON();
-    delete subscriptionToSend.expirationTime;
-
-    try {
-      // ✅ PERBAIKAN: Gunakan endpoint yang benar sesuai dokumentasi Dicoding
-      const response = await fetch(`${CONFIG.BASE_URL}/notifications/subscribe`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${currentUser.token}`,
-        },
-      body: JSON.stringify(subscriptionToSend),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error('[Push] Server subscription failed:', errorData);
-        throw new Error(`Failed to subscribe: ${errorData.message || 'Unknown error'}`);
-      }
-
-      const result = await response.json();
-      console.log('[Push] Subscription sent to server successfully:', result);
-      return result;
-    } catch (error) {
-      console.error('[Push] Could not send subscription to server:', error);
-      throw error;
-    }
+    console.log('[Push] Subscription sent successfully:', result);
+    return result;
+  } catch (err) {
+    console.error('[Push] Could not send subscription to server:', err);
+    throw err;
   }
+}
+
 
   // Test push notification (untuk development)
   async testNotification() {

@@ -1,115 +1,75 @@
 // File: src/public/sw.js
-// ✅ PERBAIKAN: Import Workbox dari node_modules (bukan CDN)
-
 import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching';
 import { registerRoute } from 'workbox-routing';
 import { NetworkFirst } from 'workbox-strategies';
 import { CacheableResponsePlugin } from 'workbox-cacheable-response';
 import { ExpirationPlugin } from 'workbox-expiration';
 
-// --- Kriteria 3: Caching Aset (Otomatis oleh InjectManifest) ---
+// --- INISIALISASI DASAR ---
 self.skipWaiting();
+self.addEventListener('activate', () => self.clients.claim());
 cleanupOutdatedCaches();
 
-// Precache semua aset yang di-generate oleh Vite
+// --- PRECACHE SEMUA FILE YANG DIGENERATE OLEH VITE ---
 precacheAndRoute(self.__WB_MANIFEST || []);
 
-// --- Kriteria 3: Caching untuk API (Mode Offline) ---
+// --- CEGAH CACHE UNTUK REQUEST SELAIN GET ---
+self.addEventListener('fetch', (event) => {
+  if (event.request.method !== 'GET') {
+    // Jangan biarkan Workbox coba cache POST/PUT/DELETE
+    return;
+  }
+});
+
+// --- CACHING UNTUK API DICODING ---
 registerRoute(
-  // Cache request ke API Dicoding
-  ({ url }) => url.origin === 'https://story-api.dicoding.dev',
+  ({ url, request }) =>
+    url.origin === 'https://story-api.dicoding.dev' && request.method === 'GET',
 
   new NetworkFirst({
     cacheName: 'story-map-api-cache',
     plugins: [
-      // Hanya cache request GET
-      {
-        cacheWillUpdate: async ({ request, response }) => {
-          if (request.method !== 'GET') {
-            return null; // Jangan cache request POST, PUT, dll.
-          }
-          return response; // Lanjutkan cache untuk GET
-        },
-      },
       new CacheableResponsePlugin({
-        statuses: [0, 200], // 0 untuk opaque responses (CORS)
+        statuses: [0, 200],
       }),
       new ExpirationPlugin({
         maxEntries: 60,
-        maxAgeSeconds: 30 * 24 * 60 * 60, // 30 Hari
+        maxAgeSeconds: 30 * 24 * 60 * 60, // 30 hari
       }),
     ],
+    networkTimeoutSeconds: 10,
   })
 );
 
-// --- Kriteria 2: Handler Push Notification ---
+// --- HANDLER PUSH NOTIFICATION ---
 self.addEventListener('push', (event) => {
-  console.log('[SW] Push notification received');
-
-  let notificationData = {
-    title: 'Ada Story Baru!',
-    body: 'Seseorang baru saja menambahkan cerita.',
-    icon: '/icons/icon-192x192.png',
-    data: { url: '/#/home' },
-  };
-
-  // Coba parse data sebagai JSON, fallback ke text
-  try {
-    if (event.data) {
-      const payload = event.data.json();
-      notificationData.title = payload.title || notificationData.title;
-      notificationData.body = payload.body || notificationData.body;
-      notificationData.icon = payload.icon || notificationData.icon;
-      notificationData.data = { url: payload.url || '/#/home' };
-      notificationData.actions = [
-        { action: 'open', title: 'Buka Cerita' },
-        { action: 'close', title: 'Tutup' },
-      ];
-    }
-  } catch (e) {
-    // Jika bukan JSON, gunakan sebagai text
-    console.warn('[SW] Push data was not JSON, treating as text.');
-    if (event.data) {
-      notificationData.body = event.data.text();
-    }
+  console.log('Service worker pushing...');
+ 
+  async function chainPromise() {
+    await self.registration.showNotification('Ada laporan baru untuk Anda!', {
+      body: 'Terjadi kerusakan lampu jalan di Jl. Melati',
+    });
   }
-
-  event.waitUntil(
-    self.registration.showNotification(notificationData.title, {
-      body: notificationData.body,
-      icon: notificationData.icon,
-      badge: '/icons/icon-192x192.png',
-      tag: 'story-notification',
-      data: notificationData.data,
-      actions: notificationData.actions || [],
-      vibrate: [200, 100, 200],
-    })
-  );
+ 
+  event.waitUntil(chainPromise());
 });
 
-// --- Kriteria 2: Handler Klik Notifikasi ---
+// --- HANDLER KLIK NOTIFIKASI ---
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
 
-  if (event.action === 'close') {
-    return;
-  }
+  if (event.action === 'close') return;
 
   const urlToOpen = event.notification.data?.url || '/#/home';
 
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
-      // Cek jika ada window yang sudah terbuka
-      for (let i = 0; i < clientList.length; i++) {
-        const client = clientList[i];
+      for (const client of clientList) {
         if (client.url.includes(urlToOpen) && 'focus' in client) {
           return client.focus();
         }
       }
-      // Jika tidak ada, buka window baru
-      if (clients.openWindow) {
-        return clients.openWindow(urlToOpen);
-      }
+      if (clients.openWindow) return clients.openWindow(urlToOpen);
     })
   );
 });

@@ -68,7 +68,7 @@ const Login = {
           "currentUser",
           JSON.stringify({ name: loginResult.name, token: loginResult.token })
         );
-
+localStorage.setItem("accessToken", loginResult.token);
         window.location.hash = "#/home";
       } catch (err) {
         console.error(err);
