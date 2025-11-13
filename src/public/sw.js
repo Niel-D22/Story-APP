@@ -1,17 +1,20 @@
 // File: src/public/sw.js
+// ✅ PERBAIKAN: Gunakan importScripts untuk Workbox (bukan ES6 import)
 
-// Import library Workbox
-import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching';
-import { registerRoute } from 'workbox-routing';
-import { NetworkFirst, StaleWhileRevalidate } from 'workbox-strategies';
-import { CacheableResponsePlugin } from 'workbox-cacheable-response';
-import { ExpirationPlugin } from 'workbox-expiration';
+importScripts('https://storage.googleapis.com/workbox-cdn/releases/7.0.0/workbox-sw.js');
+
+const { precacheAndRoute, cleanupOutdatedCaches } = workbox.precaching;
+const { registerRoute } = workbox.routing;
+const { NetworkFirst } = workbox.strategies;
+const { CacheableResponsePlugin } = workbox.cacheableResponse;
+const { ExpirationPlugin } = workbox.expiration;
 
 // --- Kriteria 3: Caching Aset (Otomatis oleh InjectManifest) ---
 self.skipWaiting();
 cleanupOutdatedCaches();
 
-precacheAndRoute(self.__WB_MANIFEST);
+// Precache semua aset yang di-generate oleh Vite
+precacheAndRoute(self.__WB_MANIFEST || []);
 
 // --- Kriteria 3: Caching untuk API (Mode Offline) ---
 registerRoute(
@@ -21,9 +24,9 @@ registerRoute(
   new NetworkFirst({
     cacheName: 'story-map-api-cache',
     plugins: [
-      // ▼▼▼ PERBAIKAN: Hanya cache request GET ▼▼▼
+      // Hanya cache request GET
       {
-        cacheWillUpdate: async ({ request, response, event, state }) => {
+        cacheWillUpdate: async ({ request, response }) => {
           if (request.method !== 'GET') {
             return null; // Jangan cache request POST, PUT, dll.
           }
@@ -52,14 +55,13 @@ self.addEventListener('push', (event) => {
     data: { url: '/#/home' },
   };
 
-  // ▼▼▼ PERBAIKAN: Tambahkan try...catch untuk JSON parse ▼▼▼
+  // Coba parse data sebagai JSON, fallback ke text
   try {
-    // Coba baca data sebagai JSON
     if (event.data) {
       const payload = event.data.json();
       notificationData.title = payload.title || notificationData.title;
-      notificationData.body = payload.body || 'Ada cerita baru';
-      notificationData.icon = payload.icon || '/icons/icon-192x192.png';
+      notificationData.body = payload.body || notificationData.body;
+      notificationData.icon = payload.icon || notificationData.icon;
       notificationData.data = { url: payload.url || '/#/home' };
       notificationData.actions = [
         { action: 'open', title: 'Buka Cerita' },
@@ -67,12 +69,12 @@ self.addEventListener('push', (event) => {
       ];
     }
   } catch (e) {
-    // JIKA GAGAL (karena menerima TEKS, bukan JSON):
-    // Ambil data sebagai teks biasa dan gunakan sebagai 'body'
+    // Jika bukan JSON, gunakan sebagai text
     console.warn('[SW] Push data was not JSON, treating as text.');
-    notificationData.body = event.data.text();
+    if (event.data) {
+      notificationData.body = event.data.text();
+    }
   }
-  // ▲▲▲ SELESAI PERBAIKAN ▲▲▲
 
   event.waitUntil(
     self.registration.showNotification(notificationData.title, {
@@ -81,7 +83,7 @@ self.addEventListener('push', (event) => {
       badge: '/icons/icon-192x192.png',
       tag: 'story-notification',
       data: notificationData.data,
-      actions: notificationData.actions,
+      actions: notificationData.actions || [],
       vibrate: [200, 100, 200],
     })
   );
@@ -100,10 +102,9 @@ self.addEventListener('notificationclick', (event) => {
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
       // Cek jika ada window yang sudah terbuka
-      if (clientList.length > 0) {
-        let client = clientList.find(c => c.url.includes(urlToOpen));
-        if (client) {
-          // Fokus ke window yang ada
+      for (let i = 0; i < clientList.length; i++) {
+        const client = clientList[i];
+        if (client.url.includes(urlToOpen) && 'focus' in client) {
           return client.focus();
         }
       }

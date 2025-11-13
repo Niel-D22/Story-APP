@@ -1,102 +1,123 @@
 import { defineConfig } from 'vite';
-import { resolve } from 'path';
-import { VitePWA } from 'vite-plugin-pwa'; // Pastikan Anda sudah menginstalnya
+import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
-  root: resolve(__dirname, 'src'),
-  publicDir: resolve(__dirname, 'src', 'public'),
-  build: {
-    outDir: resolve(__dirname, 'dist'),
-    emptyOutDir: true,
-  },
-  resolve: {
-    alias: {
-      '@': resolve(__dirname, 'src'),
-    },
-  },
-
-  server: {
-    host: true,
-    port: 5173,
-    hmr: {
-      protocol: 'ws',
-      host: 'localhost',
-      clientPort: 5173,
-      overlay: true,
-    },
-  },
-
   plugins: [
     VitePWA({
+      registerType: 'autoUpdate',
       
-      // ▼▼▼ PERBAIKAN: 'strategies' diubah menjadi 'strategy' ▼▼▼
-      strategy: 'injectManifest',
-      srcDir: resolve(__dirname, 'src', 'public'),
+      // ✅ PERBAIKAN: Ubah "strategies" menjadi "strategy"
+      strategies: 'injectManifest',
+      srcDir: 'src/public',
       filename: 'sw.js',
       
-      
       manifest: {
-        name: "StoryMap-app",
-        short_name: "App",
-        
+        name: 'Story Map - Share Your Stories',
+        short_name: 'Story Map',
+        description: 'Bagikan kisahmu lewat peta interaktif dengan Story Map',
+        theme_color: '#667eea',
+        background_color: '#ffffff',
+        display: 'standalone',
+        orientation: 'portrait',
+        start_url: '/',
+        scope: '/',
         icons: [
           {
-            "src": "icons/icon-48x48.png",
-            "sizes": "48x48",
-            "type": "image/png"
+            src: '/icons/icon-72x72.png',
+            sizes: '72x72',
+            type: 'image/png',
+            purpose: 'any maskable'
           },
           {
-            "src": "icons/icon-72x72.png",
-            "sizes": "72x72",
-            "type": "image/png"
+            src: '/icons/icon-96x96.png',
+            sizes: '96x96',
+            type: 'image/png',
+            purpose: 'any maskable'
           },
           {
-            "src": "icons/icon-96x96.png",
-            "sizes": "96x96",
-            "type": "image/png"
+            src: '/icons/icon-128x128.png',
+            sizes: '128x128',
+            type: 'image/png',
+            purpose: 'any maskable'
           },
           {
-            "src": "icons/icon-128x128.png",
-            "sizes": "128x128",
-            "type": "image/png"
+            src: '/icons/icon-144x144.png',
+            sizes: '144x144',
+            type: 'image/png',
+            purpose: 'any maskable'
           },
           {
-            "src": "icons/icon-144x144.png",
-            "sizes": "144x144",
-            "type": "image/png"
+            src: '/icons/icon-152x152.png',
+            sizes: '152x152',
+            type: 'image/png',
+            purpose: 'any maskable'
           },
           {
-            "src": "icons/icon-152x152.png",
-            "sizes": "152x152",
-            "type": "image/png"
+            src: '/icons/icon-192x192.png',
+            sizes: '192x192',
+            type: 'image/png',
+            purpose: 'any maskable'
           },
           {
-            "src": "icons/icon-192x192.png",
-            "sizes": "192x192",
-            "type": "image/png"
+            src: '/icons/icon-384x384.png',
+            sizes: '384x384',
+            type: 'image/png',
+            purpose: 'any maskable'
           },
           {
-            "src": "icons/icon-256x256.png",
-            "sizes": "256x256",
-            "type": "image/png"
-          },
-          {
-            "src": "icons/icon-384x384.png",
-            "sizes": "384x384",
-            "type": "image/png"
-          },
-          {
-            "src": "icons/icon-512x512.png",
-            "sizes": "512x512",
-            "type": "image/png"
+            src: '/icons/icon-512x512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'any maskable'
           }
         ],
-
-        start_url: "/",
-        display: "standalone",
-        background_color: "#ffffff",
-        theme_color: "#000000"
+        screenshots: [
+          {
+            src: '/screenshots/home-desktop.png',
+            sizes: '1280x720',
+            type: 'image/png',
+            form_factor: 'wide'
+          },
+          {
+            src: '/screenshots/home-mobile.png',
+            sizes: '750x1334',
+            type: 'image/png',
+            form_factor: 'narrow'
+          }
+        ]
+      },
+      
+      workbox: {
+        // Konfigurasi tambahan untuk workbox jika diperlukan
+        globPatterns: ['**/*.{js,css,html,png,jpg,jpeg,svg,ico}'],
+        cleanupOutdatedCaches: true,
+        skipWaiting: true,
+        clientsClaim: true
+      },
+      
+      devOptions: {
+        enabled: true,
+        type: 'module'
       }
-    }),
+    })
   ],
+  
+  build: {
+    sourcemap: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          leaflet: ['leaflet']
+        }
+      }
+    }
+  },
+  
+  server: {
+    port: 5173,
+    strictPort: false,
+    hmr: {
+      overlay: true
+    }
+  }
 });

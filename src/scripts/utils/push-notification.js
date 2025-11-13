@@ -63,7 +63,7 @@ class PushNotification {
       this.subscription = subscription;
       console.log('[Push] Subscription created:', subscription);
 
-      // Kirim subscription ke server (opsional untuk custom implementation)
+      // ✅ PERBAIKAN: Aktifkan kirim subscription ke server
       await this.sendSubscriptionToServer(subscription);
 
       return subscription;
@@ -111,17 +111,16 @@ class PushNotification {
     }
   }
 
-  // Kirim subscription ke server (untuk custom backend)
+  // ✅ PERBAIKAN: Kirim subscription ke server dengan endpoint yang benar
   async sendSubscriptionToServer(subscription) {
     const currentUser = JSON.parse(localStorage.getItem('currentUser'));
     if (!currentUser?.token) {
       throw new Error('User not authenticated');
     }
 
-    // Implementasi ini opsional - tergantung apakah API Dicoding support
-    // Untuk submission, cukup subscribe ke push manager saja
     try {
-      const response = await fetch(`${CONFIG.BASE_URL}/push/subscribe`, {
+      // ✅ PERBAIKAN: Gunakan endpoint yang benar sesuai dokumentasi Dicoding
+      const response = await fetch(`${CONFIG.BASE_URL}/notifications/subscribe`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -131,10 +130,17 @@ class PushNotification {
       });
 
       if (!response.ok) {
-        console.warn('[Push] Server subscription failed, but local subscription ok');
+        const errorData = await response.json();
+        console.error('[Push] Server subscription failed:', errorData);
+        throw new Error(`Failed to subscribe: ${errorData.message || 'Unknown error'}`);
       }
+
+      const result = await response.json();
+      console.log('[Push] Subscription sent to server successfully:', result);
+      return result;
     } catch (error) {
-      console.warn('[Push] Could not send subscription to server:', error);
+      console.error('[Push] Could not send subscription to server:', error);
+      throw error;
     }
   }
 
@@ -146,8 +152,8 @@ class PushNotification {
 
     await this.registration.showNotification('Test Notifikasi', {
       body: 'Ini adalah test notifikasi dari Story Map',
-      icon: '/favicon.png',
-      badge: '/favicon.png',
+      icon: '/icons/icon-192x192.png',
+      badge: '/icons/icon-192x192.png',
       vibrate: [200, 100, 200],
       tag: 'test-notification',
       actions: [
