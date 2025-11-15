@@ -3,6 +3,15 @@ import "leaflet/dist/leaflet.css";
 import API from "../../data/api.js";
 import CONFIG from "../../config.js";
 
+const DefaultIcon = L.icon({
+  iconUrl: markerIcon,
+  shadowUrl: markerShadow,
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+});
+
+L.Marker.prototype.options.icon = DefaultIcon;
+
 const AddStory = {
   async render() {
     return `
@@ -241,6 +250,8 @@ const AddStory = {
   },
 
   async afterRender() {
+
+    
     const form = document.getElementById("addStoryForm");
     const msgContainer = document.getElementById("message-container");
     const cancelBtn = document.getElementById("cancelBtn");
@@ -531,7 +542,11 @@ const AddStory = {
         submitBtn.disabled = false;
         submitBtnText.textContent = "📤 Submit Story";
       }
+
+
+      
     });
+    
   },
 
   // Update connection status indicator

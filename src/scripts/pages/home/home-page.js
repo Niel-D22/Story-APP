@@ -4,6 +4,16 @@ import API from "../../data/api.js";
 import CONFIG from "../../config.js";
 import PushNotification from "../../utils/push-notification.js";
 
+
+const DefaultIcon = L.icon({
+  iconUrl: markerIcon,
+  shadowUrl: markerShadow,
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+});
+
+L.Marker.prototype.options.icon = DefaultIcon;
+
 const HomePage = {
   async render() {
     const currentUser = JSON.parse(localStorage.getItem("currentUser"));

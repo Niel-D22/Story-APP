@@ -4,5 +4,3 @@ MAP_SERVICE_API_KEY=eEKxAVzUA41UwhWFTWVB
 link deploy:
 https://storymap-appdw.netlify.app/
 
-ini versi sempurna deploy:
-https://691612f80037fd046acbf733--storymap-appdw.netlify.app/

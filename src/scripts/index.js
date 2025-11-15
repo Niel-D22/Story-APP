@@ -24,14 +24,10 @@ if ("serviceWorker" in navigator) {
       console.log('[SW] Service Worker ready');
       
       // ✅ Inisialisasi Push Notification setelah SW ready
-      setTimeout(async () => {
-        try {
-          await PushNotificationInit.init();
-          console.log('[App] Push notification initialized');
-        } catch (error) {
-          console.error('[App] Push init error:', error);
-        }
-      }, 1500);
+     navigator.serviceWorker.ready.then(() => {
+  PushNotificationInit.init();
+});
+
 
     } catch (error) {
       console.error("[SW] Registration failed:", error);
