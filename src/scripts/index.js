@@ -9,7 +9,7 @@ const app = new App({
 });
 
 // Register Service Worker
-if ("serviceWorker" in navigator) {
+if ("serviceWorker" in navigator&& !import.meta.env.DEV) {
   window.addEventListener("load", async () => {
     try {
       // ✅ Register dengan type classic (default)

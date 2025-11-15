@@ -3,14 +3,7 @@ import "leaflet/dist/leaflet.css";
 import API from "../../data/api.js";
 import CONFIG from "../../config.js";
 
-const DefaultIcon = L.icon({
-  iconUrl: markerIcon,
-  shadowUrl: markerShadow,
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-});
 
-L.Marker.prototype.options.icon = DefaultIcon;
 
 const AddStory = {
   async render() {
